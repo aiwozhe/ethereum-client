@@ -131,8 +131,8 @@ class Client
 
     /**
      * 对交易数据进行签名
-     * @param $pri 十六进制私钥
-     * @param $msg 十六进制数据
+     * @param string $pri 十六进制私钥
+     * @param string $msg 十六进制数据
      * @return $signature
      */
     public function sign($addr, $data)
@@ -168,7 +168,7 @@ class Client
 
     /**
      * 新建账户
-     * @return 私钥和地址
+     * @return array
      */
     public function newAccount()
     {
