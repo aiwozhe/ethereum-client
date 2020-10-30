@@ -2,9 +2,12 @@
 
 namespace xtype\Ethereum;
 
+use Elliptic\EC\KeyPair;
 use GuzzleHttp\Client as GuzzleHttp;
 
 use Elliptic\EC;
+use IEXBase\TronAPI\Exception\TronException;
+use IEXBase\TronAPI\TronAddress;
 use kornrunner\Keccak;
 
 class Client
@@ -172,13 +175,50 @@ class Client
      */
     public function newAccount()
     {
+        do {
+            $ec = new EC('secp256k1');
+            $keyPair = $ec->genKeyPair();
+            $privateKey = $keyPair->getPrivate('hex');
+            $publicKey = $keyPair->getPublic('hex');
+            // 根据公钥生成地址
+            $address = Utils::pubKeyToAddress($publicKey);
+            // 反推地址
+            list($converseAddress) = $this->importAccount($privateKey);
+        } while($address != $converseAddress);
+
+        return [$address, $privateKey];
+    }
+
+    /**
+     * 通过私钥导入地址
+     *
+     * @param $privateKey
+     * @return array
+     */
+    public function importAccount($privateKey)
+    {
         $ec = new EC('secp256k1');
-        $kp = $ec->genKeyPair();
-        $pri = $kp->getPrivate('hex');
-        $pub = $kp->getPublic('hex');
+
+        // 获取密钥对
+        $keyPair = KeyPair::fromPrivate($ec, $privateKey, 'hex');
+
+        return $this->generateAccountFromKeyPair($keyPair);
+    }
+
+    /**
+     * 根据Key Pair生成地址
+     *
+     * @param KeyPair $keyPair
+     * @return array
+     */
+    private function generateAccountFromKeyPair(KeyPair $keyPair)
+    {
+        $private = $keyPair->getPrivate('hex');
+        $public = $keyPair->getPublic('hex');
         // 根据公钥生成地址
-        $addr = Utils::pubKeyToAddress($pub);
-        return [$addr, $pri];
+        $address = Utils::pubKeyToAddress($public);
+
+        return [$address, $private];
     }
 
     /**

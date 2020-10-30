@@ -10,3 +10,5 @@ $client = new Client('https://kovan.infura.io/v3/a0d810fdff64493baba47278f3ebad2
 list($address, $privateKey) = $client->newAccount();
 
 var_dump($address, $privateKey);
+
+var_dump($client->importAccount($privateKey));
